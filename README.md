@@ -1,3 +1,5 @@
+![algoritm_za_rad](https://github.com/user-attachments/assets/12d8f512-66c1-4584-bdab-348e5229a989)
+![sema_za_cip](https://github.com/user-attachments/assets/d9988c0e-3026-45de-8955-99c5b6030924)
 cip_tank_C4
 Study project of CIP: acid tank, modelling from real object.
 
