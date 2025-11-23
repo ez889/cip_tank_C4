@@ -1,5 +1,3 @@
-![algoritm_za_rad](https://github.com/user-attachments/assets/12d8f512-66c1-4584-bdab-348e5229a989)
-![sema_za_cip](https://github.com/user-attachments/assets/d9988c0e-3026-45de-8955-99c5b6030924)
 cip_tank_C4
 Study project of CIP: acid tank, modelling from real object.
 
@@ -41,3 +39,5 @@ When this 1-minute timer finishes, all outputs are reset, and the sequence retur
 
 5. Additional protection rule
 If the max level sensor `C4_LSH` is active for more than 10 seconds, the system opens the drain valve `C4_V2` and dumps the mixture to the sewer to protect the installation.
+![sema_za_cip](https://github.com/user-attachments/assets/d9988c0e-3026-45de-8955-99c5b6030924)
+![algoritm_za_rad](https://github.com/user-attachments/assets/12d8f512-66c1-4584-bdab-348e5229a989)
