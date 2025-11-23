@@ -1,1 +1,105 @@
-123
+
+
+FUNCTION_BLOCK FB_C4_Tank
+var input
+    c4_lsh:BOOL:= FALSE;    !max level SENSOR
+    c4_lsm:BOOl:= FALSE;    !min level  SENSOR
+    c4_temp:REAL;           !temperature of mix of acid in tank SENSOR
+    c4_protok:REAL;         !data of flow SENSOR
+    l1_protok:REAL          !data of flow in L1 SENSOR      
+    start: BOOL;
+    stop: BOOL;
+end_var
+
+var output
+    c4_v1:BOOL:= FALSE;
+    c4_v2:BOOL:= FALSE;
+    c4_v4:BOOL:= FALSE;
+    c4_v5:BOOL:= FALSE;
+    c4_v6:BOOL:= FALSE;    !valve for next tank
+    c4_dp:BOOL:= FALSE;     !dose pump
+    l1_p1:BOOL:= FALSE;     !pump of L1
+    fb_error1:BOOL:= FALSE;
+end_var
+
+var
+    c4_step: INT:= 0        !"case of", 0-stop, 10-filling, 20-work for line, 30-pump overrun 
+    t_circ: TON;            !5 minutes timer of circulation
+    t_PumpDrain: TON;       !1 minute after all the process
+end_var
+
+!timers
+    t_circ(IN:=(c4_step=20),PT:=T#5m);
+    t_PumpDrain(IN:=(c4_step=30),PT:=T#1m);
+
+!error from level/flowing: only when step=20, level above min but no flow
+fb_error1:=FASLE;
+    if (c4_step=20) and (not c4_lsm) and (l1_protok<= 0.0) then
+        fb_error1:=TRUE;
+    end_if
+
+!if error or stop = 0
+    if fb_error1 or stop then
+        c4_step:= 0;
+    end_if
+
+case c4_step of
+    0:                      !waiting or stop
+        c4_v1 := FALSE;
+        c4_v2 := FALSE;
+        c4_v4 := FALSE;
+        c4_v5 := FALSE;
+        c4_v6 := FALSE; 
+        c4_dp := FALSE;
+        l1_p1 := FALSE;
+
+    if start and (not c4_lsh) then
+        c4_step:= 10        !start for filling
+    end_if
+
+    10:                     !filling of water and acid
+        c4_v5:= TRUE;       !water for tank
+        c4_dp:= TRUE;       !dose pump for acid
+        c4_v6 := FALSE;     !valve for next tank
+
+    if c4_lsh then
+        c4_step:= 20;       !taken max level = go to L1
+    end_if
+
+    20:                     !work for l1
+        c4_v5:= FALSE;
+        c4_dp:= FALSE;
+
+        c4_v1 := TRUE;      !fall from c4 to L1
+        c4_v2 := FALSE;     !tube for canalisation if level os acid and water above max level sensor
+        c4_v4 := TRUE;
+        c4_v6 := TRUE;      !opened valve for next tank
+        l1_p1 := TRUE;      !pump of the L1
+
+!if minimum level=1 or lasted 5 minutes then EXIT form step 20:
+    if (not c4_lsm) or t_circ.Q then
+        c4_step:= 30;       
+    end_if
+
+    30:                     !l1_p1 pump working for 1 minutes after all the process
+        c4_v1 := FALSE;
+        c4_v2 := FALSE;
+        c4_v4 := FALSE;
+        c4_v5 := FALSE;
+        c4_v6 := TRUE;       
+        c4_dp := FALSE;
+
+        l1_p1:= TRUE;
+
+        if t_PumpDrain.Q then
+            c4_step:=0;      !complete of procedure
+        end_if
+end_case
+
+!protect the system if error with level of acid+water 
+    if c4_lsh then
+        c4_v2:= TRUE;       
+    end_if;
+
+
+END_FUNCTION_BLOCK
